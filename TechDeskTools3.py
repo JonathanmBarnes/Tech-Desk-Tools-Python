@@ -20,19 +20,18 @@
 #
 #
 # import os
-# packages = ['pyperclip','subprocess','random','pyautogui','pygetwindow','pandas','datetime','PySimpleGUI', 'auto-py-to-exe', 'pyinstaller']
+# packages = ['pyperclip','subprocess','random','pyautogui','pygetwindow','datetime','PySimpleGUI', 'auto-py-to-exe', 'pyinstaller']
 # for each in packages:
 #    os.system(f'pip install {each}')
 #
 #
 # Import functions once installed
-import pyperclip as clip  # Functions as clipboard copying
+import pyperclip as clip  # Functions as clipboard copying and pasting
 import os  # Run CMD Commands or get system stuff
 import time  # Gets Time or gives time
 import subprocess  # Run Windows functions or CMD
 import pyautogui as pg  # This controls a lot of the old AHK, can control mouse and keyboard input
 import random  # Self Explanatory
-import pandas as pd  # Often used in data, used to read excels or manipulate numbers
 import pygetwindow as gw  # Allows for selecting windows, Used in Copy Email Function
 
 # ===========================================================================================================
@@ -44,6 +43,7 @@ def GetPermAndUser():
     # Define strings for permission checking. This is the string line from CMD net user command
     laps_string = "LAPS-ReadWrite"  # Change if LAPS string ever changes for some reason
     adac_string = "ITS Tech Desk - Reset"
+    TDStudent = "TDX - Student Technic"
     MainCMDError = False
     # Actual function for getting permissions
     # For the most part this could be re-writen more efficiently but I wrote this as I was getting into python again. This does the job
@@ -69,17 +69,22 @@ def GetPermAndUser():
             AdminType = XSTAdmin
             AdminUser = username
             username = username[4:]
-            HasAdmin = True
+            TDUser = True
 
         elif username[:5] == XTRAAdmin:
             LoggedAsAdmin = True
             AdminType = XTRAAdmin
             AdminUser = username
             username = username[5:]
-            HasAdmin = True
+            TDUser = True
+        else:
+            LoggedAsAdmin = True
+            AdminType = "Other"
+            AdminUser = username
+            username = username
+
     # If user is not currently logged in as an admin account it runs net user to see if an XST/Xtra account exists
     if not LoggedAsAdmin:
-        HasAdmin = True  # Default is true mainly for error correction.
         AdminUser = (
             XSTAdmin + username
         )  # Due to both being strings the adding just concatates them
@@ -108,15 +113,20 @@ def GetPermAndUser():
             except subprocess.CalledProcessError as e:
                 Error = True
                 if Error:
-                    AdminUser = "No Network Admin Account"
-                    HasAdmin = False
+                    AdminUser = False
+                    AdminCMDError = True
     else:
-        ADMCMD = subprocess.check_output(
-            ["net", "user", AdminUser, "/domain"],
-            text=True,
-            creationflags=0x08000000,
-            shell=True,
-        )
+        try:
+            ADMCMD = subprocess.check_output(
+                ["net", "user", AdminUser, "/domain"],
+                text=True,
+                creationflags=0x08000000,
+                shell=True,
+            )
+            AdminCMDError = False
+        except subprocess.CalledProcessError as e:
+            AdminCMDError = True
+
     try:
         CMD = subprocess.check_output(
             ["net", "user", username, "/domain"],
@@ -142,33 +152,60 @@ def GetPermAndUser():
     # Checks if set variable strings above are contained within the CMD permissions.
     LAPS = False
     MFA = False
-    try:
-        if laps_string in ADMCMD:
-            LAPS = True
-    except UnboundLocalError as StringError:
-        NoCMD = StringError
-    try:
-        if adac_string in ADMCMD:
-            MFA = True
-    except UnboundLocalError as StringError:
-        NoCMD = StringError
+    if not AdminCMDError:
+        try:
+            if TDStudent not in ADMCMD:
+                TDUser = False
+        except UnboundLocalError as StringError:
+            NoCMD = StringError
+        try:
+            if laps_string in ADMCMD:
+                LAPS = True
+                TDUser = True
+        except UnboundLocalError as StringError:
+            NoCMD = StringError
+        try:
+            if adac_string in ADMCMD:
+                MFA = True
+                TDUser = True
+        except UnboundLocalError as StringError:
+            NoCMD = StringError
 
     # The below strings are there only because the program doesn't want to run if you do not have a stthomas account. It shouldn't ever need to be run but just incase.
     # Variable is named Hold because if I say that user = user it breaks
-    try:
+    if not MainCMDError:
+        try:
+            Hold = User(
+                username,
+                Users_name,
+                LoggedAsAdmin,
+                AdminUser,
+                LAPS,
+                MFA,
+                AdminType,
+                TDUser=TDUser,
+            )
+        except TypeError as e:
+            Hold = User(
+                username,
+                f"Guest, {username}",
+                LoggedAsAdmin=False,
+                AdminUser=None,
+                LAPSPerm=False,
+                MFAPerm=False,
+                AdminType="none",
+            )
+    else:
         Hold = User(
-            username, Users_name, LoggedAsAdmin, AdminUser, LAPS, MFA, AdminType
-        )
-    except TypeError as e:
-        Hold = User(
-            None,
-            "Guest, Guest",
+            username,
+            f"Guest, {username}",
             LoggedAsAdmin=False,
             AdminUser=None,
-            LAPS=False,
-            MFA=False,
+            LAPSPerm=False,
+            MFAPerm=False,
             AdminType="none",
         )
+
     return Hold
 
 
@@ -188,6 +225,7 @@ class User:
         LAPSPerm: bool,
         MFAPerm: bool,
         AdminType: str,
+        TDUser: bool = False,
     ):
         User.Username = Username
         User.Name = Name
@@ -199,6 +237,7 @@ class User:
         User.Email = f"{Username}@stthomas.edu"
         User.Laps = LAPSPerm
         User.Mfa = MFAPerm
+        User.TDUser = TDUser
 
 
 # Below is the brains of TD Tools and all the links
@@ -404,6 +443,16 @@ class Open:
             "-inprivate" if not LoggedAsAdmin else "",
             "https://services.stthomas.edu/TDClient/1898/ClientPortal/KB/ArticleDet?ID=115750",
         ]
+        Open.AdobeAdmin = [
+            Open.browser,
+            "-inprivate" if not LoggedAsAdmin else "",
+            "adminconsole.adobe.com",
+        ]
+        Open.Salesforce = [
+            Open.browser,
+            "-inprivate" if not LoggedAsAdmin else "",
+            "https://uofstthomasmn.lightning.force.com/lightning/o/Contact/list?filterName=Recent",
+        ]
 
     def Search(Open, LoggedAsAdmin: bool, Search: str, KB: bool, browser=browser):
         # Thankfully google and KB have simple search URL's this takes an input splits it then adds a plus sign then adds it to the end of the search string
@@ -576,43 +625,108 @@ def CopyEmailOnline():  # Preforms shortcuts to copy the email from outlook inbo
 # Password (Legacy)
 def GenPassword():
     # Generate two random words from the word list
-    with open(r"C:\ReferenceFiles\List.txt", "r") as word_list:
-        words = word_list.readlines()
-        RanWord1 = random.choice(words).strip()
-        RanWord2 = random.choice(words).strip()
-
+    # Hardcoded only to avoid having to import the wordlist
+    words = [
+        "Horse",
+        "Whale",
+        "Tiger",
+        "Goose",
+        "Camel",
+        "Zebra",
+        "Moose",
+        "Sheep",
+        "Mouse",
+        "Panda",
+        "Snail",
+        "Koala",
+        "Otter",
+        "Rhino",
+        "Sloth",
+        "Bison",
+        "Hippo",
+        "Monkey",
+        "Turtle",
+        "Donkey",
+        "Rabbit",
+        "Bobcat",
+        "Walrus",
+        "Badger",
+        "Gopher",
+        "Lizard",
+        "Parrot",
+        "Dolphin",
+        "Gorilla",
+        "Octopus",
+        "Green",
+        "Orange",
+        "Yellow",
+        "Purple",
+        "Silver",
+        "Bronze",
+        "Indigo",
+        "Emerald",
+        "Magenta",
+        "Scarlet",
+        "Bacon",
+        "Candy",
+        "Peach",
+        "Salad",
+        "Steak",
+        "Carrot",
+        "Cherry",
+        "Coffee",
+        "Potato",
+        "Cheese",
+        "Cookie",
+        "Hotdog",
+        "Radish",
+        "Shrimp",
+        "Tomato",
+        "Turkey",
+        "Waffle",
+        "Salmon",
+        "Avocado",
+        "Chicken",
+        "Cupcake",
+        "Lobster",
+        "Pancake",
+        "Popcorn",
+        "Burger",
+        "March",
+        "January",
+        "Monday",
+        "Tuesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+        "April",
+        "October",
+        "November",
+        "December",
+        "Dance",
+        "Smile",
+        "Think",
+    ]
+    RanWord1 = random.choice(words).strip()
+    RanWord2 = random.choice(words).strip()
+    # Prevent the same word from being chosen twice
     while RanWord1 == RanWord2:
         RanWord2 = random.choice(words).strip()
 
+    # Generate a random number between 1 and 9 in order to reach the 15 character minimum
     password = RanWord1
     PassHold = RanWord1 + RanWord2
     while len(PassHold) < 15:
         PassHold += "A"
         password += str(random.randint(1, 9))
 
+    # Combine the two words and the random number
     password += RanWord2
     return password
 
 
-def ResetPasswordOld(
-    Username: str, UserMustChange: bool
-):  # This proved problematic. The function does work but input from the GUI will not work as intended
-    Password = str(GenPassword())
-    clip.copy(Password)
-
-    # Close any existing PowerShell credential request windows
-    try:
-        # Run the password reset utility
-        ResetScript = r"C:\\ReferenceFiles\\PowerShell\\PWReset.ps1"
-        subprocess.call(["powershell.exe", f'Unblock-File "{ResetScript}"'])
-        subprocess.call(
-            ["powershell.exe", ResetScript] + [Username, Password, UserMustChange]
-        )
-    except subprocess.CalledProcessError as e:
-        test = e
-
-
-# CMD
+# CMD Functions, Calls Netuser
 def UserInfo(Username: str):
     try:
         NetUser = subprocess.check_output(
@@ -649,7 +763,7 @@ def TDTMain():
 
     User = GetPermAndUser()
     Apps = Open(User)
-    VersionNum = "3.2"
+    VersionNum = "3.3"
     Date = date.today().strftime(
         "%B %d, %Y"
     )  # Grabs current date and format's it to have long spelling of year, numerical day, and year
@@ -661,9 +775,10 @@ def TDTMain():
 
     # App is designed to fit into one corner of the screen.
     # w, h = sg.Window.get_screen_size()  # Gives screen size as a tuple, in pixels. Leaving this just incase you desire to make it scale
-    AppW = 1010
-    AppH = 540
+    AppW = 1012
+    AppH = 550
     ButS = [24, 2]
+    ButSLong = [50, 2]
     ButSSmall = [16, 1]
     # Padding: ((left, right), (top, buttom))
     IPad = 3  # This gives a smaller inner padding
@@ -681,7 +796,6 @@ def TDTMain():
     Gray = "#98999b"
     White = "#FFFFFF"
     Black = "#000000"
-    Green = "#94d600"
 
     # ===========================================================================================================
     # -----------------------------------------   Fonts Variables   ---------------------------------------------
@@ -720,6 +834,9 @@ def TDTMain():
     #
     NotesText = "Welcome To Tech Desk Tools! \n\nYou can delete this text and use this as a notepad to record info from calls or people at the walkup desks. Above you will find guides for important information you should collect and troubleshooting you can try, below are buttons to open new tickets.\n\n You can find a guide for the rest of the app and a lot of the functions under the Applications Tab. If you have any suggestions or find any issues please submit them to leadership.\n\n-Jonathan"
 
+    if User.TDUser == False:
+        NotesText = "Welcome To Tech Desk Tools! \n\nIf you are seeing this message it means that you are not a Tech Desk User or the application failed to get your permissions.\nFor a permissions error, a common fix is simply to restart the computer\n\nThis however means you do not have access to the fully functioning Tech Desk Tools.\nIf you believe this is an error please contact leadership.\n-Jonathan"
+
     # Layout elements
     # Each instancce below is an individual element. This have been done in one gigantic layout but This helps with reading. the justification setting sets the text justification within the element. Not the element itself
     # ===========================================================================================================
@@ -727,8 +844,6 @@ def TDTMain():
     # ===========================================================================================================
     # Greeting Text
     Greeting = "Welcome"
-    if User.Username == "more9821":
-        Greeting = "¡Quiubo"
 
     MainRowName = sg.T(
         f" {Greeting} {User.FName}!", font=TFont, justification="left"
@@ -765,7 +880,7 @@ def TDTMain():
 
     Search = sg.Column(
         [
-            [sg.Text("Have a Question?", font=HFont)],
+            [sg.Text("Feeling Lost?", font=HFont)],
             [
                 sg.Push(),
                 sg.Input(
@@ -803,11 +918,26 @@ def TDTMain():
                 sg.VPush(),
             ],
             [
-                sg.Button("Open Main Apps", size=ButS, font=ButFont),
-                sg.Button("Tech Desk Menu", size=ButS, font=ButFont),
+                sg.Button(
+                    "Open Main Apps",
+                    size=ButS,
+                    font=ButFont,
+                    disabled=True if User.TDUser == False else False,
+                ),
+                sg.Button(
+                    "Tech Desk Menu",
+                    size=ButS,
+                    font=ButFont,
+                    disabled=True if User.TDUser == False else False,
+                ),
             ],
             [
-                sg.Button("Enter Hours", size=ButS, font=ButFont),
+                sg.Button(
+                    "Enter Hours",
+                    size=ButS,
+                    font=ButFont,
+                    disabled=True if User.TDUser == False else False,
+                ),
                 sg.Button("Screenshot", size=ButS, font=ButFont),
             ],
         ],
@@ -816,16 +946,26 @@ def TDTMain():
 
     FirstCall = sg.Column(
         [
-            [sg.Push(), sg.Text("Ask Your Question In Teams!", font=HFont), sg.Push()],
+            [sg.Push(), sg.Text("Ask First Call Response!", font=HFont), sg.Push()],
             [
                 sg.Multiline(
                     key="-FCR-",
                     size=(56, 4),
                     font=MainFont,
                     no_scrollbar=True,
+                    disabled=True if User.TDUser == False else False,
                 ),
             ],
-            [sg.Push(), sg.Button("Ask For Help", size=ButS, font=ButFont), sg.Push()],
+            [
+                sg.Push(),
+                sg.Button(
+                    "Ask For Help",
+                    size=ButSLong,
+                    font=ButFont,
+                    disabled=True if User.TDUser == False else False,
+                ),
+                sg.Push(),
+            ],
             [sg.VPush()],
         ],
         element_justification="center",
@@ -893,17 +1033,21 @@ def TDTMain():
     # ===========================================================================================================
 
     TabMain = [
-        [sg.Push(), sg.T("Important Guides", font=HFont), sg.Push()],
+        [sg.Push(), sg.T("Create a New Ticket", font=HFont), sg.Push()],
         [
             sg.Push(),
-            sg.Button("Things To Ask Clients", size=ButS, font=ButFont),
-            sg.Button("P-Zero Troubleshooting", size=ButS, font=ButFont),
-            sg.Push(),
-        ],
-        [
-            sg.Push(),
-            sg.Button("How To Fill Out a Ticket", size=ButS, font=ButFont),
-            sg.Button("Processing Emails", size=ButS, font=ButFont),
+            sg.Button(
+                "Standard Request",
+                size=ButS,
+                font=ButFont,
+                disabled=True if User.TDUser == False else False,
+            ),
+            sg.Button(
+                "Priority Zero",
+                size=ButS,
+                font=ButFont,
+                disabled=True if User.TDUser == False else False,
+            ),
             sg.Push(),
         ],
         [sg.VPush()],
@@ -919,11 +1063,37 @@ def TDTMain():
             ),
             sg.Push(),
         ],
-        [sg.Push(), sg.T("Create a New Ticket", font=HFont), sg.Push()],
+        [sg.Push(), sg.T("Important Guides", font=HFont), sg.Push()],
         [
             sg.Push(),
-            sg.Button("Standard Request", size=ButS, font=ButFont),
-            sg.Button("Priority Zero", size=ButS, font=ButFont),
+            sg.Button(
+                "Things To Ask Clients",
+                size=ButS,
+                font=ButFont,
+                disabled=True if User.TDUser == False else False,
+            ),
+            sg.Button(
+                "P-Zero Troubleshooting",
+                size=ButS,
+                font=ButFont,
+                disabled=True if User.TDUser == False else False,
+            ),
+            sg.Push(),
+        ],
+        [
+            sg.Push(),
+            sg.Button(
+                "How To Fill Out a Ticket",
+                size=ButS,
+                font=ButFont,
+                disabled=True if User.TDUser == False else False,
+            ),
+            sg.Button(
+                "Processing Emails",
+                size=ButS,
+                font=ButFont,
+                disabled=True if User.TDUser == False else False,
+            ),
             sg.Push(),
         ],
         [sg.VPush()],
@@ -937,15 +1107,40 @@ def TDTMain():
         [sg.Push(), sg.T("Tech Desk Links", font=HFont), sg.Push()],
         [
             sg.Push(),
-            sg.Button("MIM", font=ButFont, size=ButSSmall),
-            sg.Button("Tickets", font=ButFont, size=ButSSmall),
-            sg.Button("TD Mailbox", font=ButFont, size=ButSSmall),
+            sg.Button(
+                "MIM",
+                font=ButFont,
+                size=ButSSmall,
+                disabled=True if User.TDUser == False else False,
+            ),
+            sg.Button(
+                "Tickets",
+                font=ButFont,
+                size=ButSSmall,
+                disabled=True if User.TDUser == False else False,
+            ),
+            sg.Button(
+                "TD Mailbox",
+                font=ButFont,
+                size=ButSSmall,
+                disabled=True if User.TDUser == False else False,
+            ),
             sg.Push(),
         ],
         [
             sg.Push(),
-            sg.Button("Checkout", font=ButFont, size=ButSSmall),
-            sg.Button("Bomgar", font=ButFont, size=ButSSmall),
+            sg.Button(
+                "Checkout",
+                font=ButFont,
+                size=ButSSmall,
+                disabled=True if User.TDUser == False else False,
+            ),
+            sg.Button(
+                "Bomgar",
+                font=ButFont,
+                size=ButSSmall,
+                disabled=True if User.TDUser == False else False,
+            ),
             sg.Button(
                 "When To Work",
                 font=ButFont,
@@ -955,12 +1150,22 @@ def TDTMain():
         ],
         [
             sg.Push(),
-            sg.Button("Walkup Guide", font=ButFont, size=ButSSmall),
+            sg.Button(
+                "Walkup Guide",
+                font=ButFont,
+                size=ButSSmall,
+                disabled=True if User.TDUser == False else False,
+            ),
             sg.Button("Printers", font=ButFont, size=ButSSmall),
-            sg.Button("About TD Tools", font=ButFont, size=ButSSmall),
+            sg.Button(
+                "About TD Tools",
+                font=ButFont,
+                size=ButSSmall,
+                disabled=True if User.TDUser == False else False,
+            ),
             sg.Push(),
         ],
-        [sg.Push(), sg.T("Student Applications", font=HFont), sg.Push()],
+        [sg.Push(), sg.T("General Student Links", font=HFont), sg.Push()],
         [
             sg.Push(),
             sg.Button("Canvas", font=ButFont, size=ButSSmall),
@@ -979,7 +1184,12 @@ def TDTMain():
         [sg.Push(), sg.T("Password Resets", font=HFont), sg.Push()],
         [
             sg.Push(),
-            sg.Button("How to Reset", font=ButFont, size=ButSSmall),
+            sg.Button(
+                "How to Reset",
+                font=ButFont,
+                size=ButSSmall,
+                disabled=True if User.TDUser == False else False,
+            ),
             sg.Button(
                 "ADAC",
                 font=ButFont,
@@ -996,7 +1206,11 @@ def TDTMain():
             sg.Push(),
             sg.Input(key="-RanPass-", font=ButFont, size=22, justification="c"),
             sg.Push(),
-            sg.Button("Generate", font=MainFont),
+            sg.Button(
+                "Generate",
+                font=MainFont,
+                disabled=True if User.TDUser == False else False,
+            ),
             sg.Push(),
         ],
         [sg.VPush()],
@@ -1115,7 +1329,9 @@ def TDTMain():
                 col0_width=13,
                 col_widths=[13, 8],
                 num_rows=18,
-                hide_vertical_scroll=True,
+                hide_vertical_scroll=False,
+                sbar_width=3,
+                sbar_arrow_width=3,
                 justification="c",
                 background_color=White,
                 text_color=Purple,
@@ -1130,7 +1346,11 @@ def TDTMain():
             sg.Push(),
         ],
         [sg.VPush()],
-        [sg.Push(), sg.Button("Main Directory", size=ButS, font=ButFont), sg.Push()],
+        [
+            sg.Push(),
+            sg.Button("Main Directory", size=ButSLong, font=ButFont),
+            sg.Push(),
+        ],
         [sg.VPush()],
     ]
 
@@ -1172,6 +1392,22 @@ def TDTMain():
             ),
             sg.Push(),
         ],
+        [
+            sg.Push(),
+            sg.Button(
+                "Salesforce",
+                size=ButS,
+                font=ButFont,
+                disabled=True if User.Laps == False else False,
+            ),
+            sg.Button(
+                "Adobe Admin",
+                size=ButS,
+                font=ButFont,
+                disabled=True if User.Laps == False else False,
+            ),
+            sg.Push(),
+        ],
         [sg.Push(), sg.T("How To Use and Guides", font=HFont), sg.Push()],
         [
             sg.Push(),
@@ -1191,7 +1427,7 @@ def TDTMain():
         [sg.Push(), sg.T("Senior Student Reference Menu", font=HFont), sg.Push()],
         [
             sg.Push(),
-            sg.Button("Senior Student Menu", size=ButS, font=ButFont),
+            sg.Button("Senior Student Menu", size=ButSLong, font=ButFont),
             sg.Push(),
         ],
         [sg.VPush()],
@@ -1206,7 +1442,11 @@ def TDTMain():
             sg.TabGroup(
                 [
                     [
-                        sg.Tab(" Home Tab ", TabMain, font=TabFont),
+                        sg.Tab(
+                            " Home Tab ",
+                            TabMain,
+                            font=TabFont,
+                        ),
                         sg.Tab(
                             " Applications ",
                             TabLinks,
@@ -1217,11 +1457,17 @@ def TDTMain():
                             TabContact,
                             font=TabFont,
                         ),
-                        sg.Tab(" CMD ", TabCmd, font=TabFont),
+                        sg.Tab(
+                            " CMD ",
+                            TabCmd,
+                            font=TabFont,
+                            disabled=True if User.TDUser == False else False,
+                        ),
                         sg.Tab(
                             " Senior Students ",
                             TabSenStu,
                             font=TabFont,
+                            disabled=True if User.TDUser == False else False,
                         ),
                     ]
                 ],
@@ -1368,11 +1614,6 @@ def TDTMain():
             window["-RanPass-"].update(Password)
             window.refresh()
 
-        elif event == "Reset Password":
-            Username = values["-ResetPassword-"]
-            ResetPasswordOld(Username, True)
-            window.refresh()
-
         elif event == "Main Article":
             subprocess.Popen(Apps.MainPass)
 
@@ -1480,6 +1721,12 @@ def TDTMain():
         elif event == "Processing Emails":
             subprocess.Popen(Apps.MakingTicketEmail)
 
+        elif event == "Adobe Admin":
+            subprocess.Popen(Apps.AdobeAdmin)
+
+        elif event == "Salesforce":
+            subprocess.Popen(Apps.Salesforce)
+
 
 if (
     __name__ == "__main__"
@@ -1514,6 +1761,6 @@ if (
 # the lines of code below are the terminal input for the setting above, but it sometimes it weird and does not work
 # That is why I prefer the GUI
 
-# pyinstaller --noconfirm --onedir --windowed --icon "C:/Users/xst-barn5203/OneDrive - University of St. Thomas/Desktop/TDT.ico"
-# --splash "C:/Users/xst-barn5203/OneDrive - University of St. Thomas/ITS Stuff/TDTSplash.png" --hidden-import "pyi_splash"
+# pyinstaller --noconfirm --onefile --windowed --icon "C:/Users/xst-barn5203/OneDrive - University of St. Thomas/ITS Stuff/TDT.ico"
+# --name "Tech Desk Tools" --splash "C:/Users/xst-barn5203/OneDrive - University of St. Thomas/ITS Stuff/TDTSplash.png"
 # "C:/Users/xst-barn5203/OneDrive - University of St. Thomas/Desktop/TechDeskToolsPython/BackEnd/TechDeskTools3.py"
