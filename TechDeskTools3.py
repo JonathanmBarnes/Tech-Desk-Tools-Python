@@ -1559,15 +1559,15 @@ def TDTMain():
         ):  # If closed, program closes and will not break things
             break
         elif event == "Search Knowledge Base" and values["-search-"] != "":
-            Apps.Search(User.AdLog, values["-search-"], True, Apps.browser)
+            Apps.Search(User.AdLog, values["-search-"].strip(), True, Apps.browser)
             window["-search-"].update("")
 
         elif (
             event == "-search-" + "_Enter"
-            and values["-search-"] != ""
+            and values["-search-"].strip() != ""
             or event == "Search Using Bing"
         ):
-            Apps.Search(User.AdLog, values["-search-"], False, Apps.browser)
+            Apps.Search(User.AdLog, values["-search-"].strip(), False, Apps.browser)
             window["-search-"].update("")
 
         elif event == "Search Knowledge Base" and values["-search-"] == "":
@@ -1596,16 +1596,16 @@ def TDTMain():
                 values["-FCR-"],
             )
         elif event == "Get User Info" or event == "-NetUser-" + "_Enter":
-            User = values["-NetUser-"]
-            window["-NetIn-"].update(UserInfo(User))
+            Client = values["-NetUser-"]
+            window["-NetIn-"].update(UserInfo(Client.strip()))
             window["-NetUser-"].update("")
             window.refresh()
 
         elif event == "Ping" or event == "-Ping-" + "_Enter":
             Asset = values["-Ping-"]
-            window["-PingIn-"].update(f"Attempting to Ping {Asset}")
+            window["-PingIn-"].update(f"Attempting to Ping {Asset.strip()}")
             window.refresh()
-            window["-PingIn-"].update(Ping(Asset))
+            window["-PingIn-"].update(Ping(Asset.strip()))
             window.refresh()
 
         elif event == "Generate":
