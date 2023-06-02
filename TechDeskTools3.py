@@ -1,5 +1,7 @@
 # Welcome to TD Tools Python edition
-# Written by Jonathan from Autohotkey TDTools. If questions occur please ask Sarah or email me Jonathanmbarnes@outlook.com
+#
+# Written by Jonathan from Autohotkey TDTools. If you have questions please reachout via linkedin or github
+#
 #
 # ===================================================================================================== #
 # ____________              __     ________                 __    __________             __             #
@@ -26,13 +28,12 @@
 #
 #
 # Import functions once installed
-import pyperclip as clip  # Functions as clipboard copying and pasting
-import os  # Run CMD Commands or get system stuff
-import time  # Gets Time or gives time
-import subprocess  # Run Windows functions or CMD
-import pyautogui as pg  # This controls a lot of the old AHK, can control mouse and keyboard input
-import random  # Self Explanatory
-import pygetwindow as gw  # Allows for selecting windows, Used in Copy Email Function
+import pyperclip as clip  # Functions as clipboard copying and pasting (Ctrl+C and Ctrl+V)
+import os  # Run CMD Commands or get system stuff, this import isn't needed but also does not add any additional space
+import time  # Gets Time or gives time 
+import subprocess  # Run Windows functions or CMD commands
+import pyautogui as pg  # This controls a lot of the old AHK, can control mouse and keyboard input 
+import random  # Self Explanatory 
 
 # ===========================================================================================================
 # --------------------------------------    User Permissions     --------------------------------------------
@@ -42,45 +43,45 @@ import pygetwindow as gw  # Allows for selecting windows, Used in Copy Email Fun
 def GetPermAndUser():
     # Define strings for permission checking. This is the string line from CMD net user command
     laps_string = "LAPS-ReadWrite"  # Change if LAPS string ever changes for some reason
-    adac_string = "ITS Tech Desk - Reset"
-    TDStudent = "TDX - Student Technic"
+    adac_string = "ITS Tech Desk - Reset" # Change if ADAC/Password Permission string changes
+    TDStudent = "TDX - Student Technic" # Change if TDX Student string changes
     MainCMDError = False
     # Actual function for getting permissions
     # For the most part this could be re-writen more efficiently but I wrote this as I was getting into python again. This does the job
     username = str(
         subprocess.check_output(
             ["echo", "%username%"],  # Returns the current username from the shell
-            text=True,
+            text=True, # Returns the output as a string
             creationflags=0x08000000,  # Keeps shell/CMD terminal hidden during use. it runs 3ish times during the start up
-            shell=True,
+            shell=True, # Runs in windows shell
         )
     )[
         :-1
     ]  # The output has an extra 2 characters which are trimmed via this string method
     LoggedAsAdmin = False  # These strings determine if you are both logged in at an admin account and then to determine what admin
     AdminType = "None"
-    XSTAdmin = "xst-"
-    XTRAAdmin = "xtra-"
+    XSTAdmin = "xst-" # Change if student admin string changes
+    XTRAAdmin = "xtra-" # Change if staff admin string changes
     if "-" in username:
         # If logged in username has "-" then it checks if the begining 4 or 5 characters (XST- / XTRA-) match the above.
         # Note python starts at 0, so it checks starting at the character following the 4th or 5th
-        if username[:4] == XSTAdmin:
-            LoggedAsAdmin = True
-            AdminType = XSTAdmin
-            AdminUser = username
-            username = username[4:]
-            TDUser = True
+        if username[:4] == XSTAdmin: # If the first 4 characters match XST then it sets the following
+            LoggedAsAdmin = True 
+            AdminType = XSTAdmin # This is used to determine what admin account is being used
+            AdminUser = username # This is used to set the admin account for the rest of the script
+            username = username[4:] # This is used to set the username for the rest of the script
+            TDUser = True # This is used to determine if the user is a TD or ITS user
 
-        elif username[:5] == XTRAAdmin:
+        elif username[:5] == XTRAAdmin: # Same as above but for XTRA Admins
             LoggedAsAdmin = True
             AdminType = XTRAAdmin
             AdminUser = username
             username = username[5:]
             TDUser = True
-        else:
-            LoggedAsAdmin = True
+        else: # If the user is not an admin account it sets the following
+            LoggedAsAdmin = False
             AdminType = "Other"
-            AdminUser = username
+            AdminUser = username # Only set to username because it is not an admin account, allows things to function properly
             username = username
 
     # If user is not currently logged in as an admin account it runs net user to see if an XST/Xtra account exists
@@ -90,7 +91,7 @@ def GetPermAndUser():
         )  # Due to both being strings the adding just concatates them
         # The following runs the CMD line and saves it as a text. This is done because it other would return a string output with \n and such
         # the subprocess module runs a list, any space in the sequence is indicated by a comma
-        try:
+        try: # Error checking, if the username does not exist it will set the AdminUser to XTRAAdmin + username
             ADMCMD = subprocess.check_output(
                 ["net", "user", AdminUser, "/domain"],
                 text=True,
@@ -98,7 +99,7 @@ def GetPermAndUser():
                 shell=True,
             )
         except (
-            subprocess.CalledProcessError
+            subprocess.CalledProcessError # This is the error that will be returned if the username does not exist
         ) as e:  # The system will give an error and stop the function if the username does not exist, this lets it continue.
             Error = True  # Will set as error if the above has triggered
             if Error:
@@ -113,21 +114,21 @@ def GetPermAndUser():
             except subprocess.CalledProcessError as e:
                 Error = True
                 if Error:
-                    AdminUser = False
-                    AdminCMDError = True
+                    AdminUser = False # If the Admin username does not exist or CMD cannot be run it will set the AdminUser to False
+                    AdminCMDError = True # This is used to determine if the CMD command was able to be run
     else:
-        try:
+        try: # If the user is logged in as an admin account it will run the CMD command to get the permissions
             ADMCMD = subprocess.check_output(
                 ["net", "user", AdminUser, "/domain"],
                 text=True,
                 creationflags=0x08000000,
                 shell=True,
             )
-            AdminCMDError = False
+            AdminCMDError = False # This is used to determine if the CMD command was able to be run, needs to be here otherwise error is thrown later
         except subprocess.CalledProcessError as e:
-            AdminCMDError = True
+            AdminCMDError = True 
 
-    try:
+    try: # Runs the CMD command to get the primary account permissions of the logged in user
         CMD = subprocess.check_output(
             ["net", "user", username, "/domain"],
             text=True,
@@ -138,43 +139,44 @@ def GetPermAndUser():
         MainCMDError = True
 
     # Pulls the data between Name and Comment in the CMD output. returns the full name of logged in user
-    if not MainCMDError:
-        S_index = CMD.find("Full Name")
-        E_index = CMD.find("Comment")
-        Substring = CMD[S_index:E_index]
-        Users_name = Substring[29:]
-    else:
+    if not MainCMDError: # Error checking, if the CMD command was not able to be run it will skip this
+        S_index = CMD.find("Full Name") # Finds the index of the string "Full Name"
+        E_index = CMD.find("Comment") # Finds the index of the string "Comment"
+        Substring = CMD[S_index:E_index] # Sets the substring to the string between the two indexes
+        Users_name = Substring[29:] # Sets the Users_name to the substring starting at the 29th character, this is the whole name of a user
+    else: # If the CMD command was not able to be run it will set the Users_name to the logged in username, if local account it will be that accounts name
         Users_name = username
 
-    if username == "varn3146" or username == "drkuhns" or username == "lars1716":
-        LoggedAsAdmin = True
+    if username == "varn3146" or username == "drkuhns" or username == "lars1716": 
+        LoggedAsAdmin = True # If the username is one of the above it will set LoggedAsAdmin to True
+                             # Manual override for staff accounts needing to access adac since they can use it on primary account
 
-    # Checks if set variable strings above are contained within the CMD permissions.
-    LAPS = False
-    MFA = False
-    if not AdminCMDError:
+    # Checks if set variable strings above are contained within the CMD permissions output.
+    LAPS = False # Sets LAPS to False, if the below strings are found it will set to True
+    MFA = False # Sets MFA to False, if the below strings are found it will set to True
+    if not AdminCMDError: # Error checking, if the CMD command was not able to be run it will skip this, prevents error
         try:
-            if TDStudent not in ADMCMD:
+            if TDStudent not in ADMCMD: # If the string is not found in the CMD output it will set TDUser to False
                 TDUser = False
-        except UnboundLocalError as StringError:
+        except UnboundLocalError as StringError: # Error handling 
             NoCMD = StringError
         try:
-            if laps_string in ADMCMD:
+            if laps_string in ADMCMD: # If the string is found in the CMD output it will set LAPS to True
                 LAPS = True
-                TDUser = True
+                TDUser = True # Sets TDUser to True, this is so FTEs can use the app, they may have LAPS but not TDStudent in their permissions
         except UnboundLocalError as StringError:
             NoCMD = StringError
         try:
-            if adac_string in ADMCMD:
+            if adac_string in ADMCMD: # If the string is found in the CMD output it will set MFA to True
                 MFA = True
-                TDUser = True
+                TDUser = True # Sets TDUser to True, this is so FTEs can use the app, they may have MFA but not TDStudent in their permissions
         except UnboundLocalError as StringError:
             NoCMD = StringError
 
     # The below strings are there only because the program doesn't want to run if you do not have a stthomas account. It shouldn't ever need to be run but just incase.
     # Variable is named Hold because if I say that user = user it breaks
     if not MainCMDError:
-        try:
+        try: # General plug in for info gathered above
             Hold = User(
                 username,
                 Users_name,
@@ -185,7 +187,7 @@ def GetPermAndUser():
                 AdminType,
                 TDUser=TDUser,
             )
-        except TypeError as e:
+        except TypeError as e: # Error handling, caused if any of the above has a null status. Prevents the program from failing to open
             Hold = User(
                 username,
                 f"Guest, {username}",
@@ -195,7 +197,7 @@ def GetPermAndUser():
                 MFAPerm=False,
                 AdminType="none",
             )
-    else:
+    else: # This is for when things fail, its a safety net to prevent the program from failing to open. "Guest Login"
         Hold = User(
             username,
             f"Guest, {username}",
@@ -206,7 +208,7 @@ def GetPermAndUser():
             AdminType="none",
         )
 
-    return Hold
+    return Hold # Returns the User class with all the info gathered above
 
 
 # ===========================================================================================================
@@ -216,43 +218,42 @@ def GetPermAndUser():
 # User class used to store info from the permissions function above. it is easier to pass a user and just call user.xxx to grab info
 #
 class User:
-    def __init__(
-        User,
-        Username: str,
-        Name: str,
-        LoggedAsAdmin: bool,
-        AdminUser: str,
-        LAPSPerm: bool,
-        MFAPerm: bool,
-        AdminType: str,
-        TDUser: bool = False,
-    ):
+    def __init__( # Starts class definition
+        User, # Class name
+        Username: str, # Username of the logged in user
+        Name: str, # Full name of the logged in user
+        LoggedAsAdmin: bool, # If the user is logged in as an admin account
+        AdminUser: str, # The admin account the user is logged in as
+        LAPSPerm: bool, # If the user has LAPS permissions
+        MFAPerm: bool, # If the user has MFA permissions
+        AdminType: str, # The type of admin account the user is logged in as
+        TDUser: bool = False, # If the user has TDStudent permissions, defaults to False
+    ): # Ends class definition
+        # Assigns all the variables to the class, allows for easy access of the info
         User.Username = Username
         User.Name = Name
-        User.FName = Name.partition(",")[-1].split()[0]
-        User.AdminStatus = AdminType
+        User.FName = Name.partition(",")[-1].split()[0] # First Name. Splits name string by the comma, then splits the first name from the rest of the name.
+        User.AdminStatus = AdminType 
         User.AdLog = LoggedAsAdmin
         User.AdUser = AdminUser
-        User.AdEmail = f"{AdminUser}@stthomas.edu"
-        User.Email = f"{Username}@stthomas.edu"
+        User.AdEmail = f"{AdminUser}@stthomas.edu" # Sets the email of the admin account
+        User.Email = f"{Username}@stthomas.edu" # Sets the email of the logged in user
         User.Laps = LAPSPerm
         User.Mfa = MFAPerm
         User.TDUser = TDUser
 
 
 # Below is the brains of TD Tools and all the links
-#
-#
+# This is the class that is called when the user clicks most buttons
 class Open:
-    # Default Browser launch location. Should this change or microsoft make another browser replace this line for another browser
-    # For the most part I will not add notes into this as its just URL's
+    # Default Browser launch location. Should this change or microsoft make another browser replace this line for another browser's location
     browser = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
     Map = [browser, "https://campusmap.stthomas.edu/"]
 
-    def __init__(Open, User: User):
+    def __init__(Open, User: User): # Starts class definition, Calls user class from above
         LoggedAsAdmin = (
-            User.AdLog
-        )  # These were mainly copied from previously exist functions I wrote being using a class, you could replace LoggedAsAdmin and delete this line
+            User.AdLog # Sets LoggedAsAdmin to the AdLog variable from the User class, determines if apps open in incognito
+        )
         # Each instance creates a list of required things for subprocess.Popen later used. I ran into problems with having that within the class unless I defined a function for each
         Open.MIM = [
             Open.browser,  # Sets default browser to open in
@@ -594,7 +595,8 @@ def Snip():  # Screenshot
     return
 
 
-def CopyEmailOnline():  # Preforms shortcuts to copy the email from outlook inbox
+def CopyEmailOnline():  # Preforms shortcuts to copy the email from outlook inbox to the clipboard
+    import pygetwindow as gw  # Allows for selecting windows
     try:
         test = gw.getAllTitles()
         Mailbox = "Mail - Tech Desk - Outlook"
