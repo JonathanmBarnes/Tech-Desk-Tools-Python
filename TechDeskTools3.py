@@ -472,10 +472,10 @@ class Open:
             "-inprivate" if not LoggedAsAdmin else "",
             "https://services.stthomas.edu/TDClient/1898/ClientPortal/KB/ArticleDet?ID=124544",
         ]
-        Open.MakingTicketEmail = [
+        Open.StatusDash = [
             Open.browser,
             "-inprivate" if not LoggedAsAdmin else "",
-            "https://services.stthomas.edu/TDClient/1898/ClientPortal/KB/ArticleDet?ID=115750",
+            "https://status.stthomas.edu/",
         ]
         Open.AdobeAdmin = [
             Open.browser,
@@ -542,6 +542,14 @@ class Open:
                 browser,
                 "-inprivate" if not User.AdLog else "",
                 "https://services.stthomas.edu/TDNext",
+            ]
+        )
+        time.sleep(0.4)
+        subprocess.Popen(
+            [
+                browser,
+                "-inprivate" if not User.AdLog else "",
+                "https://status.stthomas.edu/",
             ]
         )
 
@@ -916,7 +924,7 @@ def TDTMain():
 
     Search = sg.Column(
         [
-            [sg.Text("Feeling Lost?", font=HFont)],
+            [sg.Text("Have a Question?", font=HFont)],
             [
                 sg.Push(),
                 sg.Input(
@@ -932,7 +940,7 @@ def TDTMain():
             ],
             [
                 sg.Button(
-                    "Search Knowledge Base",
+                    "Check the Knowledge Base",
                     bind_return_key=False,
                     size=ButS,
                     font=ButFont,  # Bind_return_key is false due to it being implemented in a different, better way below
@@ -1119,13 +1127,13 @@ def TDTMain():
         [
             sg.Push(),
             sg.Button(
-                "How To Fill Out a Ticket",
+                "Email and Filling Out Tickets",
                 size=ButS,
                 font=ButFont,
                 disabled=True if User.TDUser == False else False,
             ),
             sg.Button(
-                "Processing Emails",
+                "Walkup Guide",
                 size=ButS,
                 font=ButFont,
                 disabled=True if User.TDUser == False else False,
@@ -1187,7 +1195,7 @@ def TDTMain():
         [
             sg.Push(),
             sg.Button(
-                "Walkup Guide",
+                "Status Dashboard",
                 font=ButFont,
                 size=ButSSmall,
                 disabled=True if User.TDUser == False else False,
@@ -1606,7 +1614,7 @@ def TDTMain():
             Apps.Search(User.AdLog, values["-search-"].strip(), False, Apps.browser)
             window["-search-"].update("")
 
-        elif event == "Search Knowledge Base" and values["-search-"] == "":
+        elif event == "Check the Knowledge Base" and values["-search-"] == "":
             subprocess.Popen(Apps.MainKBHome)
 
         elif event == "Open Main Apps":
@@ -1756,11 +1764,11 @@ def TDTMain():
         elif event == "P-Zero Troubleshooting":
             subprocess.Popen(Apps.P0Troubleshoot)
 
-        elif event == "How To Fill Out a Ticket":
+        elif event == "Email and Filling Out Tickets":
             subprocess.Popen(Apps.MakingTicket)
 
-        elif event == "Processing Emails":
-            subprocess.Popen(Apps.MakingTicketEmail)
+        elif event == "Status Dashboard":
+            subprocess.Popen(Apps.StatusDash)
 
         elif event == "Adobe Admin":
             subprocess.Popen(Apps.AdobeAdmin)
