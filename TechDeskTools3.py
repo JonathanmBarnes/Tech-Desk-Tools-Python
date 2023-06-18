@@ -615,9 +615,9 @@ class Open:
             creationflags=0x08000000,
             shell=True,
         )  # This will copy and type any input into the box above the button into teams. It does not press enter incase of error
-        time.sleep(3)
-        pg.hotkey("alt", "shift", "c")
         time.sleep(2)
+        pg.hotkey("alt", "shift", "c")
+        time.sleep(1)
         pg.hotkey("alt", "shift", "c")
         time.sleep(1)
         pg.typewrite(Input, interval=0.01)
@@ -807,7 +807,7 @@ def TDTMain():
 
     User = GetPermAndUser()
     Apps = Open(User)
-    VersionNum = "3.3"
+    VersionNum = "3.4"
     Date = date.today().strftime(
         "%B %d, %Y"
     )  # Grabs current date and format's it to have long spelling of year, numerical day, and year
@@ -1127,13 +1127,13 @@ def TDTMain():
         [
             sg.Push(),
             sg.Button(
-                "Email and Filling Out Tickets",
+                "Walkup Guide",
                 size=ButS,
                 font=ButFont,
                 disabled=True if User.TDUser == False else False,
             ),
             sg.Button(
-                "Walkup Guide",
+                "Email and Filling Out Tickets",
                 size=ButS,
                 font=ButFont,
                 disabled=True if User.TDUser == False else False,
@@ -1226,6 +1226,21 @@ def TDTMain():
         ],
         [sg.VPush()],
         [sg.Push(), sg.T("Password Resets", font=HFont), sg.Push()],
+        [sg.VPush()],
+        [
+            sg.Push(),
+            sg.T("Generate Password", font=ButFont),
+            sg.Push(),
+            sg.Input(key="-RanPass-", font=ButFont, size=22, justification="c"),
+            sg.Push(),
+            sg.Button(
+                "Generate",
+                font=MainFont,
+                disabled=True if User.TDUser == False else False,
+            ),
+            sg.Push(),
+        ],
+        [sg.Push()],
         [
             sg.Push(),
             sg.Button(
@@ -1241,20 +1256,6 @@ def TDTMain():
                 disabled=True if User.AdLog == False else False,
             ),
             sg.Button("Main Article", font=ButFont, size=ButSSmall),
-            sg.Push(),
-        ],
-        [sg.VPush()],
-        [
-            sg.Push(),
-            sg.T("Generate Password", font=ButFont),
-            sg.Push(),
-            sg.Input(key="-RanPass-", font=ButFont, size=22, justification="c"),
-            sg.Push(),
-            sg.Button(
-                "Generate",
-                font=MainFont,
-                disabled=True if User.TDUser == False else False,
-            ),
             sg.Push(),
         ],
         [sg.VPush()],
@@ -1497,12 +1498,12 @@ def TDTMain():
                             font=TabFont,
                         ),
                         sg.Tab(
-                            " Contact Info ",
+                            " Directory ",
                             TabContact,
                             font=TabFont,
                         ),
                         sg.Tab(
-                            " CMD ",
+                            " Get Info ",
                             TabCmd,
                             font=TabFont,
                             disabled=True if User.TDUser == False else False,
