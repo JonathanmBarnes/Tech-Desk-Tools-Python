@@ -48,6 +48,7 @@ def GetPermAndUser():
     )
     TDStudent = "TDX - Student Technic"  # Change if TDX Student string changes
     MainCMDError = False
+    AdminCMDError = False
     # Actual function for getting permissions
     # For the most part this could be re-writen more efficiently but I wrote this as I was getting into python again. This does the job
     username = str(
@@ -487,6 +488,11 @@ class Open:
             "-inprivate" if not LoggedAsAdmin else "",
             "https://uofstthomasmn.lightning.force.com/lightning/o/Contact/list?filterName=Recent",
         ]
+        Open.SalesforceGuide = [
+            Open.browser,
+            "-inprivate" if not LoggedAsAdmin else "",
+            "https://services.stthomas.edu/TDClient/1898/ClientPortal/KB/ArticleDet?ID=152438",
+        ]
 
     def Search(Open, LoggedAsAdmin: bool, Search: str, KB: bool, browser=browser):
         # Thankfully google and KB have simple search URL's this takes an input splits it then adds a plus sign then adds it to the end of the search string
@@ -876,7 +882,7 @@ def TDTMain():
     # ---------------------------------------------    Text    --------------------------------------------------
     # ===========================================================================================================
     #
-    NotesText = "Welcome To Tech Desk Tools! \n\nYou can delete this text and use this as a notepad to record info from calls or people at the walkup desks. Above you will find guides for important information you should collect and troubleshooting you can try, below are buttons to open new tickets.\n\n You can find a guide for the rest of the app and a lot of the functions under the Applications Tab. If you have any suggestions or find any issues please submit them to leadership.\n\n-Jonathan"
+    NotesText = "Welcome To Tech Desk Tools! \n\nYou can delete this text and use this as a notepad to record info from calls or people at the walkup desks. Below you will find guides for important information you should collect and troubleshooting you can try, above are buttons to open new tickets.\n\n You can find a guide for the rest of the app and a lot of the functions under the Applications Tab. If you have any suggestions or find any issues please submit them to Tech Desk leadership."
 
     if User.TDUser == False:
         NotesText = "Welcome To Tech Desk Tools! \n\nIf you are seeing this message it means that you are not a Tech Desk User or the application failed to get your permissions.\nFor a permissions error, a common fix is simply to restart the computer\n\nThis however means you do not have access to the fully functioning Tech Desk Tools.\nIf you believe this is an error please contact leadership.\n-Jonathan"
@@ -1020,24 +1026,14 @@ def TDTMain():
     # ===========================================================================================================
 
     TabCmd = [
-        [sg.VPush()],
         [
-            sg.Stretch(),
-            sg.Text("User Info", font=ButFont),
-            sg.Stretch(),
-            sg.Input(key="-NetUser-", size=22, font=MainFont, justification="center"),
-            sg.Stretch(),
-            sg.Button("Get User Info", font=MainFont, size=ButSSmall),
-            sg.Stretch(),
-        ],
-        [
-            sg.Push(),
+            # sg.Push(),
             sg.Multiline(
                 reroute_stdout=True,
                 echo_stdout_stderr=True,
                 reroute_cprint=True,
                 key="-NetIn-",
-                size=(60, 20),
+                size=(61, 22),
                 rstrip=True,
                 justification="left",
                 font=MainFont,
@@ -1045,25 +1041,39 @@ def TDTMain():
             ),
             sg.Push(),
         ],
-        [sg.VPush()],
-        [
-            sg.Stretch(),
-            sg.Text("Ping Client", font=ButFont),
-            sg.Stretch(),
-            sg.Input(key="-Ping-", size=25, font=MainFont, justification="center"),
-            sg.Stretch(),
-            sg.Button("Ping", font=MainFont, size=ButSSmall),
-            sg.Stretch(),
-        ],
         [
             sg.Push(),
+            sg.Input(
+                default_text="Enter Username",
+                key="-NetUser-",
+                size=48,
+                font=MainFont,
+                justification="center",
+            ),
+            sg.Push(),
+        ],
+        [sg.VPush()],
+        [sg.VPush()],
+        [
+            # sg.Push(),
             sg.Multiline(
                 key="-PingIn-",
                 reroute_stdout=True,
                 echo_stdout_stderr=True,
                 reroute_cprint=True,
-                size=(60, 3),
+                size=(61, 3),
                 no_scrollbar=True,
+                font=MainFont,
+                justification="center",
+            ),
+            sg.Push(),
+        ],
+        [
+            sg.Push(),
+            sg.Input(
+                default_text="Ping Computer or Website",
+                key="-Ping-",
+                size=48,
                 font=MainFont,
                 justification="center",
             ),
@@ -1342,6 +1352,10 @@ def TDTMain():
             "Title": "ASC Main",
             "data": ["tommiecentral", "962-5000"],
         },
+        "UST Texas": {
+            "Title": "Houston, TX",
+            "data": ["713-", "522-7911"],
+        },
         "Tech Desk MPLS": {
             "Title": "TMH 203B",
             "data": ["Tech Desk", "962-6230"],
@@ -1363,16 +1377,16 @@ def TDTMain():
         )
 
     TabContact = [
-        [sg.VPush()],
+        # [sg.VPush()],
         [
-            sg.Push(),
+            # sg.Push(),
             sg.Tree(
                 treedata,
                 headings=["Email@stthomas.edu", "Phone"],
                 font=ButFont,
                 col0_heading="Contact Info",
                 col0_width=13,
-                col_widths=[13, 8],
+                col_widths=[14, 11],
                 num_rows=18,
                 hide_vertical_scroll=False,
                 sbar_width=3,
@@ -1463,7 +1477,7 @@ def TDTMain():
         ],
         [
             sg.Push(),
-            sg.Button("XST Resets", font=ButFont, size=ButSSmall),
+            sg.Button("Salesforce Guide", font=ButFont, size=ButSSmall),
             sg.Button("Using Azure", font=ButFont, size=ButSSmall),
             sg.Button("Inventory", font=ButFont, size=ButSSmall),
             sg.Push(),
@@ -1507,6 +1521,7 @@ def TDTMain():
                             TabCmd,
                             font=TabFont,
                             disabled=True if User.TDUser == False else False,
+                            key="-CMD-",
                         ),
                         sg.Tab(
                             " Senior Students ",
@@ -1521,6 +1536,7 @@ def TDTMain():
                 border_width=0,
                 tab_border_width=0,
                 selected_background_color=Gray,
+                enable_events=True,
             )
         ]
     ]
@@ -1568,12 +1584,12 @@ def TDTMain():
         finalize=True,
         auto_size_text=True,
         scaling=2.7,
-        icon=r"C:\Users\xst-barn5203\OneDrive - University of St. Thomas\Desktop\TDT.ico",
-        titlebar_icon=r"C:\Users\xst-barn5203\OneDrive-University of St. Thomas\Desktop\TDT.ico",
     )
+    B64IconTest = b"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"
+    # B64Icon = b"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"
     window.SetIcon(
-        icon=r"C:\Users\xst-barn5203\OneDrive-University of St. Thomas\Desktop\TDT.ico",
-        pngbase64=None,
+        # icon=r"C:\Users\xst-barn5203\OneDrive - University of St. Thomas\Desktop\TDT.ico",
+        pngbase64=B64IconTest,
     )
     window.set_min_size((AppW, AppH))
     # This allows for the focused element to submit enter. For example if you type in CMD but you have text in the search it will not submit a search as well as CMD
@@ -1594,6 +1610,7 @@ def TDTMain():
             pyi_splash.close()
         except:
             pass
+
         event, values = window.read(timeout=1000)
         window["-Time-"].update(
             datetime.datetime.now().strftime("%I:%M %p")
@@ -1603,7 +1620,8 @@ def TDTMain():
             event == sg.WIN_CLOSED
         ):  # If closed, program closes and will not break things
             break
-        elif event == "Search Knowledge Base" and values["-search-"] != "":
+
+        elif event == "Check the Knowledge Base" and values["-search-"] != "":
             Apps.Search(User.AdLog, values["-search-"].strip(), True, Apps.browser)
             window["-search-"].update("")
 
@@ -1776,6 +1794,9 @@ def TDTMain():
 
         elif event == "Salesforce":
             subprocess.Popen(Apps.Salesforce)
+
+        elif event == "Salesforce Guide":
+            subprocess.Popen(Apps.SalesforceGuide)
 
 
 if (
