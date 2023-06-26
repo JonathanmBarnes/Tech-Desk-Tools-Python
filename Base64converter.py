@@ -1,3 +1,5 @@
+# This is not mine, I just keep it here because it could be useful and I don't want to loose it.
+
 import PySimpleGUI as sg
 import base64
 

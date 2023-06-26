@@ -47,6 +47,8 @@ def GetPermAndUser():
         "ITS Tech Desk - Reset"  # Change if ADAC/Password Permission string changes
     )
     TDStudent = "TDX - Student Technic"  # Change if TDX Student string changes
+    global MainCMDError
+    global AdminCMDError
     MainCMDError = False
     AdminCMDError = False
     # Actual function for getting permissions
