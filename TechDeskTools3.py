@@ -506,64 +506,43 @@ class Open:
         subprocess.Popen([browser, "-inprivate" if not LoggedAsAdmin else "", url])
 
     def OpenMain(
-        Open, User: User, browser=browser
+        Open,
+        User: User,
+        browser=browser,
     ):  # Will open normal tabs we expect people to have open to do their jobs
         time.sleep(0.8)
 
-        subprocess.Popen(
-            [
-                browser,
-                "-inprivate" if not User.AdLog else "",
-                "https://remotesupport.stthomas.edu/saml",
-            ]
-        )
+        if not User.Laps:
+            subprocess.Popen(
+                [
+                    browser,
+                    "-inprivate" if not User.AdLog else "",
+                    "https://remotesupport.stthomas.edu/saml",
+                ]
+            )
         time.sleep(0.4)
-
-        subprocess.Popen(
-            [
-                browser,
-                "-inprivate" if not User.AdLog else "",
-                "https://services.stthomas.edu/TDClient/1898/ClientPortal/KB/ArticleDet?ID=128248",
-            ]
-        )
-        time.sleep(0.4)
-
-        subprocess.Popen(
-            [
-                browser,
-                "-inprivate" if not User.AdLog else "",
-                "https://outlook.office.com/mail/techdesk@stthomas.edu/inbox",
-            ]
-        )
-        time.sleep(0.4)
-
-        subprocess.Popen(
-            [
-                browser,
-                "-inprivate" if not User.AdLog else "",
-                "https://portal.azure.com/#view/Microsoft_AAD_IAM/UsersManagementMenuBlade/~/MsGraphUsers",
-            ]
-        )
-        time.sleep(0.4)
-        subprocess.Popen(
-            [
-                browser,
-                "-inprivate" if not User.AdLog else "",
-                "https://services.stthomas.edu/TDNext",
-            ]
-        )
-        time.sleep(0.4)
-        subprocess.Popen(
-            [
-                browser,
-                "-inprivate" if not User.AdLog else "",
-                "https://status.stthomas.edu/",
-            ]
-        )
 
         if not User.Laps:
+            subprocess.Popen(Open.TDTrain)
             time.sleep(0.4)
 
+        subprocess.Popen(
+            Open.TDMail,
+        )
+        time.sleep(0.4)
+
+        subprocess.Popen(
+            Open.Tickets,
+        )
+        time.sleep(0.4)
+
+        subprocess.Popen(
+            Open.StatusDash,
+        )
+
+        time.sleep(0.4)
+
+        if not User.Laps:
             subprocess.Popen(
                 [
                     browser,
@@ -571,6 +550,13 @@ class Open:
                     "https://services.stthomas.edu/TDClient/1898/ClientPortal/KB/ArticleDet?ID=140931",
                 ]
             )
+            time.sleep(0.4)
+
+        if User.Laps:
+            subprocess.Popen(
+                Open.SSMenu,
+            )
+            time.sleep(0.4)
 
         if not User.AdLog:
             time.sleep(3)
@@ -1834,6 +1820,6 @@ if (
 # the lines of code below are the terminal input for the setting above, but it sometimes it weird and does not work
 # That is why I prefer the GUI
 
-# pyinstaller --noconfirm --onefile --windowed --icon "C:/Users/xst-barn5203/OneDrive - University of St. Thomas/ITS Stuff/TDT.ico"
-# --name "Tech Desk Tools" --splash "C:/Users/xst-barn5203/OneDrive - University of St. Thomas/ITS Stuff/TDTSplash.png"
-# "C:/Users/xst-barn5203/OneDrive - University of St. Thomas/Desktop/TechDeskToolsPython/BackEnd/TechDeskTools3.py"
+# pyinstaller --noconfirm --onefile --windowed --icon "C:/Users/xst-barn5203/OneDrive - University of St. Thomas/Desktop/Tech Desk Tools Repo/Tech-Desk-Tools-Python/Images/TDT.ico"
+# --name "Tech Desk Tools" --splash "C:/Users/xst-barn5203/OneDrive - University of St. Thomas/Desktop/Tech Desk Tools Repo/Tech-Desk-Tools-Python/Images/TDTSplash.png"
+# "C:/Users/xst-barn5203/OneDrive - University of St. Thomas/Desktop/Tech Desk Tools Repo/Tech-Desk-Tools-Python/TechDeskTools3.py"
