@@ -1,4 +1,6 @@
 # This is not mine, I just keep it here because it could be useful and I don't want to loose it.
+# Useful for creating the icons for the GUIs since they don't want to render via standard upload.
+# For splash or other images, just use the standard upload.
 
 import PySimpleGUI as sg
 import base64

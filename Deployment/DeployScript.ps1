@@ -1,6 +1,6 @@
 ﻿clear
 
-# Check if the script is running with administrative privileges
+# Check if the script is running with administrative privileges. If not, relaunch it with administrative privileges.
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     # Prompt the user to run the script as an administrator
     $arguments = "& '" + $MyInvocation.MyCommand.Definition + "'"
@@ -9,46 +9,49 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 }
 
 ###### Global Configuration - (Each path much be conatined within "quotes")
-
+# Join-Path $PSScriptRoot sets it so the root path is in the folder. This means you can download and replace without needing to toy with
+# the script, and instead just replace the exe file when updating TDT
 $TechToolsNew = Join-Path $PSScriptRoot "Tech Desk Tools.exe"
 
 $AssetList = Join-Path $PSScriptRoot "Assets.txt"
 
-## For Testing
+## For Testing, this just isolated one computer instead of the whole lump sum.
 #$AssetList = Join-Path $PSScriptRoot "AssetTest.txt"
 
-$TechToolsName = "Tech Desk Tools.exe"
+$TechToolsName = "Tech Desk Tools.exe" #Change based on what the exe is named
 
-$ShortcutLocation = "c$\Users\Public\Desktop"
+$ShortcutLocation = "c$\Users\Public\Desktop" # Location of the shortcut to be created
 
-$ExeLocation = "c$\Program Files\"
+$ExeLocation = "c$\Program Files\" # Location of the exe to be copied
 
-$OldVersion = "Tech Desk Tools.exe" 
+$OldVersion = "Tech Desk Tools.exe"  #Change if for some reason a previous version is named differently
 
 ######
 
 # Create a list of assets from the input text file
 [string[]]$Assets = Get-Content -Path $AssetList
 
-# Resolves name of files
+# Resolves name of files, pretty sure it makes it so the path is a normal path
 $Script = Split-Path -Path $TechToolsNew -Leaf -Resolve
+
 Echo "Application to be deployed: $Script"
 
 # Analytics
-$NumberOfAssets = $Assets.Length
-$TechDeskToolsSuccess = 0
-$TechDeskToolsPercent = 0
+$NumberOfAssets = $Assets.Length # Number of assets to be deployed to
+$TechDeskToolsSuccess = 0 # Number of assets that were successfully deployed to
+$TechDeskToolsPercent = 0 # Percentage of assets that were successfully deployed to
 
 Echo ''
 Echo 'List of assets:' $Assets `r
 Echo 'Total number of assets:' $NumberOfAssets `r
 
 $selection = Read-Host 'Do you still want to proceed? (y/n)'
-if (!($selection.toLower() -eq "y")) {
+if (!($selection.toLower() -eq "y")) { # If the user does not enter "y", exit the script
+    Echo 'Exiting script...'
    exit
 }
 
-$RemoveShortcut = 0 # 1 is yes 0 is no. You should not need to adjust this
+$RemoveShortcut = 0 # 1 is yes 0 is no. You should not need to adjust this. 
 
 Echo `r '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~' `r
 
@@ -177,15 +180,15 @@ Echo '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~' `r
 Echo 'Tech Desk Tools Success:' $TechDeskToolsSuccess `r
 Echo 'Tech Desk Tools Percentage:' $TechDeskToolsPercent% `r
 
-if ($FailInstallComputers -ne 0){
+if ($FailInstallComputers -ne 0){ # If there are computers that failed to have the new version installed, list them.
 write-host "Install Failed on the following Computers"
 write-host $FailInstallComputers
 }
 
-if ($OldNotRemovedComputers -ne 0){
+if ($OldNotRemovedComputers -ne 0){ # If there are computers that failed to have the old version removed, list them.
 write-host "Failed to remove an older version of Tech Desk Tools"
 write-host $OldNotRemovedComputers
 }
 
-Read-Host 'Press any key to continue...';
+Read-Host 'Press any key to continue...'; # Prevent the script from closing immediately after completion.
 exit
