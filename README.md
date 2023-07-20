@@ -2,28 +2,6 @@
 
 #### This is an informative guide about Tech Desk Tools and gives an overview of the tools built into the app as well as an explanation for some of the choices made when designing the application
 
-## Jump to specific sections:
-
-#### **Functions Built into the app**
-
-#### [Front Page (Left Side Explanations)]
-
-#### [Home Tab]
-
-#### [Applications Tab]
-
-#### [Directory Tab]
-
-#### [Get Info Tab]
-
-#### [Senior Students Tab]
-
-#### **Additional Information**
-
-[Maintenance of Application - For St. Thomas ITS]
-
-[Reason for some choices/FAQ]
-
 ## Some Quick Background:
 
 Tech Desk Tools Python was made to build on the legacy and functionality of the older Tech Desk Tools. The original tech desk tools was created by a Tech Desk student named Jared Klassen around 2019. He wrote in scripts and features that were commonly used or that could be useful for the Tech Desk, the older version combined these into a single application for easier use. The old program functioned fine and did it's role, however, it was written in AutoHotKey (AHK) which has some limitations when you may want to build or expand functionality and accessibility. It is for that reason we chose to switch it to python in December 2022. Python is easier to read but also allows for more options in its function. This new version was designed to consistently be on your screen and to be useful in many different situations. The application itself does not enable anything special you couldn't do on your own, but instead works to make it easier to accomplish these tasks.
