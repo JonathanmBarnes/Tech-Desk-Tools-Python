@@ -6,23 +6,23 @@
 
 #### **Functions Built into the app**
 
-#### [Main Page](#Front)
+#### [Front Page (Left Side Explanations)]
 
-#### [Home Tab](#Home)
+#### [Home Tab]
 
-#### [Applications](#Apps)
+#### [Applications Tab]
 
-#### [Directory](#Directory)
+#### [Directory Tab]
 
-#### [Get Info Tab](#Info)
+#### [Get Info Tab]
 
-#### [Senior Students](#SenStuTab)
+#### [Senior Students Tab]
 
 #### **Additional Information**
 
-[Application Maintenance](#Maintain)
+[Maintenance of Application - For St. Thomas ITS]
 
-[FAQ](#FAQ)
+[Reason for some choices/FAQ]
 
 ## Some Quick Background:
 
@@ -32,7 +32,7 @@ Tech Desk Tools is designed specifically to be used at the University of St. Tho
 
 # Functions Built into the app
 
-## Front Page (Left Side Explanations) {#Front}
+## Front Page (Left Side Explanations)
 
 ![](https://services.stthomas.edu/TDPortal/Images/Viewer?fileName=34158c1c-2bb8-4450-a278-f10e6aaf7476.png&beidInt=373)
 
@@ -60,7 +60,7 @@ Tech Desk Tools is designed specifically to be used at the University of St. Tho
 
 -   Home, Applications, Directory, Get Info, and Senior Students
 
-## Home Tab {#Home}
+## Home Tab
 
 ![](https://services.stthomas.edu/TDPortal/Images/Viewer?fileName=9c2515a7-dbbb-4f98-a2de-2fcd52a627ae.png&beidInt=373)
 
@@ -77,7 +77,7 @@ Tech Desk Tools is designed specifically to be used at the University of St. Tho
 -   This is a temporary note space. Can be used for collecting information from clients or ranting, as you see fit. Please note that text entered does not saved at all and cannot be recovered
 -   If the user who is actively signed in is not a member of the Tech Desk or the program is not able to get their permissions this space will show a different text.
 
-## Applications Tab {#Apps}
+## Applications Tab
 
 ![](https://services.stthomas.edu/TDPortal/Images/Viewer?fileName=73b56068-21da-4f35-b161-b625c56095c1.png&beidInt=373)
 
@@ -96,7 +96,7 @@ Organized buttons separated based on Tech Desk Links, General Student Links, and
 -   A button linking to the Main, University public KB on password resets
 -   Password Generator - This creates passwords based off words coded into the application, the passwords will always be sufficient for the UST requirements. It is not recommended to keep these passwords and should set it to something more meaningful afterwards
 
-## Directory Tab {#Directory}
+## Directory Tab
 
 ![](https://services.stthomas.edu/TDPortal/Images/Viewer?fileName=e027db8c-6c1d-4557-a378-5fa5cad27a73.png&beidInt=373)
 
@@ -106,7 +106,7 @@ Organized buttons separated based on Tech Desk Links, General Student Links, and
 
 ##### The phone numbers for campus are all **651 (unless specified)**, and the extensions for the departments are the last five in the number listed. 
 
-## Get Info Tab {#Info}
+## Get Info Tab
 
 **Previously named CMD, this was renamed to Get Info to reiterate its function.** 
 
@@ -128,7 +128,7 @@ CMD or Command Prompt, is the default terminal for windows that can communicate 
 
 ![](https://services.stthomas.edu/TDPortal/Images/Viewer?fileName=56a07315-f651-43cf-a4ae-b6c213e800ce.png&beidInt=373)
 
-## Senior Students Tab {#SenStuTab}
+## Senior Students Tab
 
 ![](https://services.stthomas.edu/TDPortal/Images/Viewer?fileName=a502fa57-335e-4897-b4a9-f7ef3e5cc2f1.png&beidInt=373)
 
@@ -149,7 +149,7 @@ It also contains links to KBs with guidelines for the use of these sites/tools.
 
 # Additional Notes
 
-## Maintenance of Application - For St. Thomas ITS {#Maintain}
+## Maintenance of Application - For St. Thomas ITS
 
 ### **Deployment/Installing Tech Desk Tools**
 
@@ -163,7 +163,7 @@ The application is written in python and contained within a single .py file. Sho
 
 The application contains instructions about what things do to the best of my ability. If questions arise just reach out to me. The layout of the app and the GUI library takes some getting used to, but it is easier once looking at it a bit, it is difficult to explain ever single line in the GUI. I should add it is still much simpler than alternatives which is why I chose to use it.
 
-## Reason for some choices/FAQ {#FAQ}
+## Reason for some choices/FAQ
 
 ### **Why is it a single .exe file**
 
